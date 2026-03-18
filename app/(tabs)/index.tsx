@@ -34,7 +34,7 @@ export default function HomeScreen() {
             <ThemedText style={[styles.greetingLabel, { color: colors.subtle }]}>
               Welcome back,
             </ThemedText>
-            <ThemedText type="title">{user?.email?.split('@')[0] ?? 'Athlete'}</ThemedText>
+            <ThemedText type="title">{user?.name || user?.email?.split('@')[0] || 'Athlete'}</ThemedText>
           </View>
           <TouchableOpacity
             style={[styles.avatar, { backgroundColor: colors.accentLight }]}
