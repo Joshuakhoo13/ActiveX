@@ -21,26 +21,30 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 export default function LoginScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { login } = useAuth();
+  const { login, register } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
 
-  const handleLogin = async () => {
+  const handleSubmit = async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert('Error', 'Please enter both email and password.');
       return;
     }
 
     setLoading(true);
-    const success = await login(email, password);
+    const result = isRegister
+      ? await register(email, password, name)
+      : await login(email, password);
     setLoading(false);
 
-    if (success) {
+    if (result.ok) {
       router.replace('/(tabs)');
     } else {
-      Alert.alert('Login Failed', 'Invalid email or password.');
+      Alert.alert(isRegister ? 'Registration Failed' : 'Login Failed', result.error);
     }
   };
 
@@ -63,16 +67,30 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.form}>
+        {isRegister && (
+          <View style={styles.inputGroup}>
+            <ThemedText style={[styles.label, { color: colors.subtle }]}>Name</ThemedText>
+            <TextInput
+              style={[
+                styles.input,
+                { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
+              ]}
+              placeholder="Your name"
+              placeholderTextColor={colors.subtle}
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              autoComplete="name"
+            />
+          </View>
+        )}
+
         <View style={styles.inputGroup}>
           <ThemedText style={[styles.label, { color: colors.subtle }]}>Email</ThemedText>
           <TextInput
             style={[
               styles.input,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                color: colors.text,
-              },
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
             ]}
             placeholder="you@example.com"
             placeholderTextColor={colors.subtle}
@@ -89,11 +107,7 @@ export default function LoginScreen() {
           <TextInput
             style={[
               styles.input,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                color: colors.text,
-              },
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.text },
             ]}
             placeholder="Enter your password"
             placeholderTextColor={colors.subtle}
@@ -105,29 +119,39 @@ export default function LoginScreen() {
         </View>
 
         <TouchableOpacity
-          style={[styles.loginButton, { backgroundColor: colors.accent }]}
-          onPress={handleLogin}
+          style={[styles.submitButton, { backgroundColor: colors.accent }]}
+          onPress={handleSubmit}
           activeOpacity={0.8}
           disabled={loading}>
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <ThemedText style={styles.loginButtonText}>Sign In</ThemedText>
+            <ThemedText style={styles.submitButtonText}>
+              {isRegister ? 'Create Account' : 'Sign In'}
+            </ThemedText>
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.forgotButton}>
-          <ThemedText style={[styles.forgotText, { color: colors.accent }]}>
-            Forgot password?
-          </ThemedText>
-        </TouchableOpacity>
+        {!isRegister && (
+          <TouchableOpacity style={styles.forgotButton}>
+            <ThemedText style={[styles.forgotText, { color: colors.accent }]}>
+              Forgot password?
+            </ThemedText>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.footer}>
-        <ThemedText style={{ color: colors.subtle }}>
-          Don't have an account?{' '}
-          <ThemedText style={{ color: colors.accent, fontWeight: '600' }}>Sign Up</ThemedText>
-        </ThemedText>
+        <View style={styles.footerRow}>
+          <ThemedText style={{ color: colors.subtle }}>
+            {isRegister ? 'Already have an account? ' : "Don't have an account? "}
+          </ThemedText>
+          <TouchableOpacity onPress={() => setIsRegister(!isRegister)} hitSlop={16}>
+            <ThemedText style={{ color: colors.accent, fontWeight: '600' }}>
+              {isRegister ? 'Sign In' : 'Sign Up'}
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -176,14 +200,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
   },
-  loginButton: {
+  submitButton: {
     height: 52,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
   },
-  loginButtonText: {
+  submitButtonText: {
     color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '700',
@@ -199,5 +223,9 @@ const styles = StyleSheet.create({
   footer: {
     alignItems: 'center',
     marginTop: 40,
+  },
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

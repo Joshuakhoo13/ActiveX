@@ -29,7 +29,7 @@ export default function ProfileScreen() {
           <IconSymbol name="person.fill" size={32} color={colors.accent} />
         </View>
         <View>
-          <ThemedText type="subtitle">{user?.email?.split('@')[0] ?? 'User'}</ThemedText>
+          <ThemedText type="subtitle">{user?.name || user?.email?.split('@')[0] || 'User'}</ThemedText>
           <ThemedText style={[styles.email, { color: colors.subtle }]}>
             {user?.email ?? 'user@example.com'}
           </ThemedText>
